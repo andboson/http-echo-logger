@@ -23,8 +23,9 @@ Exec `curl` request to the `/echo` endpoint:
 
 ```shell
 curl -X 'POST' -i \
-  'http://localhost:8081/echo?new=1' \       
-  -H 'accept: application/json' \                                     -H 'Content-Type: application/json' \
+  'http://localhost:8088/echo?new=1' \       
+  -H 'accept: application/json' \  
+  -H 'Content-Type: application/json' \
   -d '{
       "foo":"bar"   
     }'
@@ -47,5 +48,8 @@ Body:
 }
 ```
 
-You can see the history of requests in your browser http://localhost:8081/
+You can see the history of requests in your browser http://localhost:8088/
+
+![Screenshot from 2021-11-20 19-05-33](https://user-images.githubusercontent.com/2089327/142736723-9031ae8a-45a2-4f21-9b04-57e48955bfd4.png)
+
 
