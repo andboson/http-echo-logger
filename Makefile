@@ -9,7 +9,7 @@ dep:
 	go get -d -u golang.org/x/tools/cmd/goimports
 
 build:
-	CGO_ENABLED=0 GOOS=${GOOS} go build -ldflags "-X=main.Revision=${REVISION} -X=main.Version=${VERSION}" -o httplogger ./cmd/main.go
+	CGO_ENABLED=0 GOOS=${GOOS} go build -ldflags "-X=main.Revision=${REVISION} -X=main.Version=${VERSION}" -o ./bin/httplogger ./cmd/main.go
 
 lint:
 	revive --config=revive.toml --formatter=unix ./...
