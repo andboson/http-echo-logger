@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
 
@@ -30,7 +34,9 @@
             <td>{{ .Date.Format "02-01-2006 15:04:05 MST" }}</td>
             <td>{{ .Method }}</td>
             <td>{{ .RemoteAddr }}</td>
-            <td>{{ .PrintString }}</td>
+            <td>
+                {{ .PrintString }}
+            </td>
         </tr>
         {{ end }}
         </tbody>
