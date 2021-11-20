@@ -32,5 +32,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: andboson/http-cli-echo-logger:latests
+          tags: andboson/http-cli-echo-logger:latest
           labels: ${{ steps.meta.outputs.labels }}
