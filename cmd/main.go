@@ -11,11 +11,13 @@ func main() {
 	// check templates
 	tpls, err := templates.NewTemplates()
 	if err != nil {
-		log.Fatalf("%+v", err)
+		log.Fatalf("template load error: %+v", err)
 	}
 
 	// start the server
 	serv := server.NewServer(server.DefaultHTTPAddr, tpls)
 
-	_ = serv.Start()
+	if err := serv.Start(); err != nil {
+		log.Printf("unable to start the server: %+v", err)
+	}
 }
