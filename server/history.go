@@ -51,7 +51,7 @@ func (hi *HistoryItem) PrintString() template.HTML {
 		fmt.Fprintf(buff, "<p> %s: %s</p>", s, strings.Join(header, ""))
 	}
 
-	fmt.Fprintf(buff, "<pre>%s</pre>", hi.body)
+	fmt.Fprintf(buff, "<pre style=\"max-width:770px;\"><code class=\"language-json\">%s</code></pre>", hi.body)
 	for s, header := range hi.Form {
 		fmt.Fprintf(buff, "<p> %s: %s<p>", s, strings.Join(header, ""))
 	}
