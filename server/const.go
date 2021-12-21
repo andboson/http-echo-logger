@@ -2,7 +2,7 @@ package server
 
 const (
 	// DefaultHTTPAddr is a default address
-	DefaultHTTPAddr = ":8080"
+	DefaultHTTPAddr = ":80"
 
 	indexEndpoint        = "/"
 	echoEndpointDedfault = "/echo"
