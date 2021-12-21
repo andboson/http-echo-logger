@@ -1,6 +1,12 @@
 # http-cli-echo-logger
 
-A simple http-web server logging incoming requests to stdout with simple http-interface.
+A simple http echo server for logging incoming requests
+
+* echo server
+* mock server
+* log requests to stdout
+* save and see requests in a browser 
+* one binary file only
 
 ### Run locally
 
