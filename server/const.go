@@ -6,4 +6,6 @@ const (
 
 	indexEndpoint        = "/"
 	echoEndpointDedfault = "/echo"
+
+	endpointMockDelimiter = "::"
 )

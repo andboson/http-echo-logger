@@ -3,7 +3,7 @@
 A simple http echo server for logging incoming requests
 
 * echo server
-* mock server
+* mock server with custom response
 * log requests to stdout
 * save and see requests in a browser 
 * one binary file only
@@ -37,6 +37,7 @@ you also can point multiple endpoints:
 docker run -it -p8081:80 -eCUSTOM_ENDPOINTS="/api/v1/echo /api/v2/echo " andboson/http-cli-echo-logger 
 ```
 
+(see docker-compose.yaml how to add a custom response)
 
 Exec `curl` request to the `/echo` endpoint:
 
