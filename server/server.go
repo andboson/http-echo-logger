@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"andboson/http-echo-logger/templates"
@@ -20,22 +21,27 @@ type Server interface {
 }
 
 type server struct {
-	address      string
-	server       *http.Server
-	history      History
-	tpls         *templates.Templates
-	echoEndpoint string
+	address       string
+	server        *http.Server
+	history       History
+	tpls          *templates.Templates
+	echoEndpoints []string
 }
 
 // NewServer returns instance of a service and sets up a server
-func NewServer(addr string, tpls *templates.Templates, echoEndpointCustom string) Server {
+func NewServer(addr string, tpls *templates.Templates, echoEndpointsCustom string) Server {
 	mux := http.NewServeMux()
 
+	endpoints := strings.Split(echoEndpointsCustom, "\n")
+	if !strings.Contains(echoEndpointsCustom, "\n") {
+		endpoints = strings.Split(echoEndpointsCustom, " ")
+	}
+
 	s := &server{
-		tpls:         tpls,
-		history:      History{},
-		address:      addr,
-		echoEndpoint: echoEndpointCustom,
+		tpls:          tpls,
+		history:       History{},
+		address:       addr,
+		echoEndpoints: endpoints,
 		server: &http.Server{
 			Handler: mux,
 		},
@@ -43,11 +49,19 @@ func NewServer(addr string, tpls *templates.Templates, echoEndpointCustom string
 
 	mux.Handle(indexEndpoint, s.createHTTPHandler())
 
-	if s.echoEndpoint == "" {
-		s.echoEndpoint = echoEndpoint
+	if echoEndpointsCustom == "" {
+		s.echoEndpoints = append(s.echoEndpoints, echoEndpointDedfault)
 	}
 
-	mux.Handle(s.echoEndpoint, s.createEchoHandler())
+	for i, endpoint := range s.echoEndpoints {
+		s.echoEndpoints[i] = strings.Trim(strings.TrimSpace(endpoint), "\n")
+		if s.echoEndpoints[i] == "" {
+			s.echoEndpoints = append(s.echoEndpoints[:i], s.echoEndpoints[i+1:]...)
+			continue
+		}
+		log.Printf("=>%s<", s.echoEndpoints[i])
+		mux.Handle(s.echoEndpoints[i], s.createEchoHandler())
+	}
 
 	return s
 }
@@ -58,7 +72,9 @@ func (s *server) Start() error {
 	if err != nil {
 		return errors.Wrap(err, "can't create listener")
 	}
-	log.Printf("HTTP CLI LOGGER server started: %s, echo endpoint:%s", DefaultHTTPAddr, s.echoEndpoint)
+	log.Printf("HTTP CLI LOGGER server started: %s, echo endpoints: %s",
+		DefaultHTTPAddr,
+		strings.Join(s.echoEndpoints, ","))
 	if err := s.server.Serve(ln); err != nil {
 		return errors.Wrap(err, "can't start server")
 	}

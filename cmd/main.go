@@ -8,7 +8,7 @@ import (
 	"andboson/http-echo-logger/templates"
 )
 
-const customEchoEndpointEnv = "CUSTOM_ENDPOINT"
+const customEchoEndpointsEnv = "CUSTOM_ENDPOINTS"
 
 func main() {
 	// check templates
@@ -18,7 +18,7 @@ func main() {
 	}
 
 	// start the server
-	serv := server.NewServer(server.DefaultHTTPAddr, tpls, os.Getenv(customEchoEndpointEnv))
+	serv := server.NewServer(server.DefaultHTTPAddr, tpls, os.Getenv(customEchoEndpointsEnv))
 
 	if err := serv.Start(); err != nil {
 		log.Printf("unable to start the server: %+v", err)
