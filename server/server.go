@@ -1,8 +1,10 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -59,8 +61,14 @@ func NewServer(addr string, tpls *templates.Templates, echoEndpointsCustom strin
 			s.echoEndpoints = append(s.echoEndpoints[:i], s.echoEndpoints[i+1:]...)
 			continue
 		}
-		log.Printf("=>%s<", s.echoEndpoints[i])
-		mux.Handle(s.echoEndpoints[i], s.createEchoHandler())
+
+		mockResponse := ""
+		if strings.Contains(s.echoEndpoints[i], endpointMockDelimiter) {
+			splitted := strings.Split(s.echoEndpoints[i], endpointMockDelimiter)
+			s.echoEndpoints[i] = splitted[0]
+			mockResponse = splitted[1]
+		}
+		mux.Handle(s.echoEndpoints[i], s.createEchoHandler(mockResponse))
 	}
 
 	return s
@@ -94,12 +102,30 @@ func (s *server) createHTTPHandler() http.Handler {
 	})
 }
 
-func (s *server) createEchoHandler() http.Handler {
+func (s *server) createEchoHandler(mockResponse string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		item := HistoryItem{
 			Request: r,
 			Date:    time.Now(),
 		}
+
+		if mockResponse != "" {
+			item = HistoryItem{
+				Request: &http.Request{
+					Header:        r.Header,
+					Body:          ioutil.NopCloser(bytes.NewBufferString(mockResponse)),
+					ContentLength: int64(len(mockResponse)),
+					Method:        r.Method,
+					URL:           r.URL,
+					RemoteAddr:    r.RemoteAddr,
+					RequestURI:    r.RequestURI,
+				},
+				Date: time.Now(),
+			}
+			item.Header.Set("Content-Length", fmt.Sprintf("%d", len(mockResponse)))
+			item.Header.Set("Content-Type", "application/json")
+		}
+
 		item.PrintConsole(w)
 		s.history.AddItem(item)
 		w.Header().Add("referrer", "http-echo-server")

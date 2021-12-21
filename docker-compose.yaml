@@ -9,3 +9,4 @@ services:
       CUSTOM_ENDPOINTS: |-
         /api/v1/echo
         /api/v2/echo
+        /api/v1/mock::{"foo":"bar"}
