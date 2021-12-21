@@ -1,6 +1,12 @@
 # http-cli-echo-logger
 
-A simple http-web server logging incoming requests to stdout with simple http-interface.
+A simple http echo server for logging incoming requests
+
+* echo server
+* mock server
+* log requests to stdout
+* save and see requests in a browser 
+* one binary file only
 
 ### Run locally
 
@@ -18,6 +24,13 @@ Run a container:
 ```shell
 docker run -it -p8088:8080 andboson/http-cli-echo-logger 
 ```
+
+or with a custom echo endpoint (`/api/v1/`):
+
+```shell
+docker run -it -p8088:8080 -eCUSTOM_ENDPOINT:"/api/v1" andboson/http-cli-echo-logger 
+```
+
 
 Exec `curl` request to the `/echo` endpoint:
 
