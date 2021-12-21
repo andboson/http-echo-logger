@@ -2,7 +2,7 @@
 
 A simple http echo server for logging incoming requests
 
-* echo server
+* echo server with multiple endpoints support
 * mock server
 * log requests to stdout
 * save and see requests in a browser 
