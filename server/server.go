@@ -20,27 +20,34 @@ type Server interface {
 }
 
 type server struct {
-	address string
-	server  *http.Server
-	history History
-	tpls    *templates.Templates
+	address      string
+	server       *http.Server
+	history      History
+	tpls         *templates.Templates
+	echoEndpoint string
 }
 
 // NewServer returns instance of a service and sets up a server
-func NewServer(addr string, tpls *templates.Templates) Server {
+func NewServer(addr string, tpls *templates.Templates, echoEndpointCustom string) Server {
 	mux := http.NewServeMux()
 
 	s := &server{
-		tpls:    tpls,
-		history: History{},
-		address: addr,
+		tpls:         tpls,
+		history:      History{},
+		address:      addr,
+		echoEndpoint: echoEndpointCustom,
 		server: &http.Server{
 			Handler: mux,
 		},
 	}
 
 	mux.Handle(indexEndpoint, s.createHTTPHandler())
-	mux.Handle(echoEndpoint, s.createEchoHandler())
+
+	if s.echoEndpoint == "" {
+		s.echoEndpoint = echoEndpoint
+	}
+
+	mux.Handle(s.echoEndpoint, s.createEchoHandler())
 
 	return s
 }
@@ -51,7 +58,7 @@ func (s *server) Start() error {
 	if err != nil {
 		return errors.Wrap(err, "can't create listener")
 	}
-	log.Printf("HTTP CLI LOGGER server started: %s", DefaultHTTPAddr)
+	log.Printf("HTTP CLI LOGGER server started: %s, echo endpoint:%s", DefaultHTTPAddr, s.echoEndpoint)
 	if err := s.server.Serve(ln); err != nil {
 		return errors.Wrap(err, "can't start server")
 	}

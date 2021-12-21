@@ -19,6 +19,8 @@ RUN install_packages ca-certificates && \
 
 WORKDIR /app
 
+ARG CUSTOM_ENDPOINT
+
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/bin/ .
 

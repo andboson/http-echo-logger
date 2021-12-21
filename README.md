@@ -25,6 +25,13 @@ Run a container:
 docker run -it -p8088:8080 andboson/http-cli-echo-logger 
 ```
 
+or with a custom echo endpoint (`/api/v1/`):
+
+```shell
+docker run -it -p8088:8080 -eCUSTOM_ENDPOINT:"/api/v1" andboson/http-cli-echo-logger 
+```
+
+
 Exec `curl` request to the `/echo` endpoint:
 
 ```shell
