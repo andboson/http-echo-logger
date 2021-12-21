@@ -22,19 +22,19 @@ go run ./cmd/main.go
 Run a container:
 
 ```shell
-docker run -it -p8088:8080 andboson/http-cli-echo-logger 
+docker run -it -p8088:80 andboson/http-cli-echo-logger 
 ```
 
 or with a custom echo endpoint (`/api/v1/`):
 
 ```shell
-docker run -it -p8081:8080 -eCUSTOM_ENDPOINTS="/api/v1" andboson/http-cli-echo-logger 
+docker run -it -p8081:80 -eCUSTOM_ENDPOINTS="/api/v1" andboson/http-cli-echo-logger 
 ```
 
 you also can point multiple endpoints:
 
 ```shell
-docker run -it -p8081:8080 -eCUSTOM_ENDPOINTS="/api/v1/echo /api/v2/echo " andboson/http-cli-echo-logger 
+docker run -it -p8081:80 -eCUSTOM_ENDPOINTS="/api/v1/echo /api/v2/echo " andboson/http-cli-echo-logger 
 ```
 
 
@@ -42,7 +42,7 @@ Exec `curl` request to the `/echo` endpoint:
 
 ```shell
 curl -X 'POST' -i \
-  'http://localhost:8088/echo?new=1' \       
+  'http://localhost:80/echo?new=1' \       
   -H 'accept: application/json' \  
   -H 'Content-Type: application/json' \
   -d '{
@@ -67,7 +67,7 @@ Body:
 }
 ```
 
-You can see the history of requests in your browser http://localhost:8088/
+You can see the history of requests in your browser http://localhost/
 
 ![Screenshot from 2021-11-20 19-05-33](https://user-images.githubusercontent.com/2089327/142736723-9031ae8a-45a2-4f21-9b04-57e48955bfd4.png)
 
