@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -27,7 +28,6 @@ type History struct {
 func (h *History) AddItem(item HistoryItem) {
 	h.values = append(h.values, item)
 }
-
 
 //GetHistory returns requests history in reverse order
 func (h *History) GetHistory(reverse bool) []HistoryItem {
@@ -89,4 +89,17 @@ func printHeaders(headers http.Header, w http.ResponseWriter) {
 		w.Header().Add(s, strings.Join(header, ""))
 		fmt.Printf("\n %s: %s", s, strings.Join(header, ""))
 	}
+}
+
+func (hi *HistoryItem) MarshalJSON() ([]byte, error) {
+	result := map[string]interface{}{
+		"Header":     hi.Header,
+		"Body":       hi.body,
+		"Method":     hi.Method,
+		"URL":        hi.URL,
+		"RemoteAddr": hi.RemoteAddr,
+		"RequestURI": hi.RequestURI,
+	}
+
+	return json.Marshal(result)
 }

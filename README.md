@@ -5,7 +5,8 @@ A simple http echo server for logging incoming requests
 * echo server with multiple endpoints support
 * mock server with custom response
 * log requests to stdout
-* save and see requests in a browser 
+* see the history of requests in the browser 
+* get the history of requests via API
 * one binary file only
 
 ### Run locally
@@ -14,8 +15,9 @@ A simple http echo server for logging incoming requests
 go run ./cmd/main.go
 ```
 
-* Default app port - `8080`
+* Default app port - `80`
 * Default echo endpoint - `/echo`
+* Default api endpoint - `/ipa`
 
 ### Run with docker
 
