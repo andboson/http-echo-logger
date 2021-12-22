@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -34,7 +35,7 @@ type server struct {
 func NewServer(addr string, tpls *templates.Templates, echoEndpointsCustom string) Server {
 	mux := http.NewServeMux()
 
-	endpoints := strings.Split(echoEndpointsCustom, "\n")
+	endpoints := strings.Split(strings.TrimSpace(echoEndpointsCustom), "\n")
 	if !strings.Contains(echoEndpointsCustom, "\n") {
 		endpoints = strings.Split(echoEndpointsCustom, " ")
 	}
@@ -50,9 +51,10 @@ func NewServer(addr string, tpls *templates.Templates, echoEndpointsCustom strin
 	}
 
 	mux.Handle(indexEndpoint, s.createHTTPHandler())
+	mux.Handle(apiEndpoint, s.createAPIHandler())
 
 	if echoEndpointsCustom == "" {
-		s.echoEndpoints = append(s.echoEndpoints, echoEndpointDedfault)
+		s.echoEndpoints = append([]string{}, echoEndpointDefault)
 	}
 
 	for i, endpoint := range s.echoEndpoints {
@@ -97,6 +99,15 @@ func (s *server) Stop(ctx context.Context) error {
 func (s *server) createHTTPHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := s.tpls.Tpls.Execute(w, s.history.GetHistory(true)); err != nil {
+			fmt.Fprintf(w, "%+v", err)
+		}
+	})
+}
+
+func (s *server) createAPIHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(s.history.GetHistory(true)); err != nil {
 			fmt.Fprintf(w, "%+v", err)
 		}
 	})
