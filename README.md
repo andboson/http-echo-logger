@@ -3,7 +3,7 @@
 A simple http echo server for logging incoming requests
 
 * echo server with multiple endpoints support
-* mock server with custom response
+* mock server with custom response (as http://wiremock.org/ kinda)
 * log requests to stdout
 * see the history of requests in the browser 
 * get the history of requests via API
@@ -39,7 +39,13 @@ you also can point multiple endpoints:
 docker run -it -p8081:80 -eCUSTOM_ENDPOINTS="/api/v1/echo /api/v2/echo " andboson/http-cli-echo-logger 
 ```
 
-(see docker-compose.yaml how to add a custom response)
+you also can define custom response:
+
+```shell
+docker run -it -p8081:80 -eCUSTOM_ENDPOINTS='/api/v1/echo::{"foo:bar"} /api/v2/echo' andboson/http-cli-echo-logger 
+```
+
+(see docker-compose.yaml more abot custom response examples)
 
 Exec `curl` request to the `/echo` endpoint:
 
