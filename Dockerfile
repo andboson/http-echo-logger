@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1.2.1
 
 # Start from the latest golang base image
-FROM golang:1.17.3-buster as builder
+FROM golang:1.17.7-buster as builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
