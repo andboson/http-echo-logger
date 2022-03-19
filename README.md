@@ -3,7 +3,7 @@
 A simple http echo server for logging incoming requests
 
 * echo server with multiple endpoints support
-* mock server with custom response (with request matching)
+* mock server with custom response with request matching (as http://wiremock.org/ kinda)
 * log requests to stdout
 * see the history of requests in the browser 
 * get the history of requests via API
