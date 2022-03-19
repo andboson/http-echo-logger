@@ -7,6 +7,20 @@ services:
       - "8081:80"
     environment:
       CUSTOM_ENDPOINTS: |-
-        /api/v1/echo
-        /api/v2/echo
-        /api/v1/mock::{"foo":"bar"}
+              [
+                {
+                  "path":"/graphQl",
+                  "request":"{\"foo1\":\"bar\"}",
+                  "mock":"{\"foo_resp1\":\"bar_resp1\"}"
+                },
+                {
+                  "path":"/graphQl",
+                  "request":"{\"foo2\":\"bar\"}",
+                  "mock":"{\"foo_resp2\":\"bar_resp2\"}"
+                },
+                {
+                  "path":"/auth",
+                  "request":"",
+                  "mock":"{\"key\":\"auth_key\"}"
+                }
+              ]
