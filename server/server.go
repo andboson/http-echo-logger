@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"andboson/http-echo-logger/templates"
@@ -23,23 +24,24 @@ type Server interface {
 }
 
 type server struct {
-	address       string
-	server        *http.Server
-	history       History
-	tpls          *templates.Templates
-	echoEndpoints []endpoint
+	address          string
+	server           *http.Server
+	history          History
+	tpls             *templates.Templates
+	echoEndpoints    []endpoint
+	echoEndpointsMap map[string][]endpoint
 }
 
 type endpoint struct {
-	Path         string `json:"path"`
-	MatchRequest string `json:"request"`
-	MockResponse string `json:"mock"`
+	Path            string   `json:"path"`
+	ResponseHeaders []string `json:"headers"`
+	MatchRequest    string   `json:"request"`
+	MockResponse    string   `json:"mock"`
 }
 
 // NewServer returns instance of a service and sets up a server
 func NewServer(addr string, tpls *templates.Templates, echoEndpointsCustom string) Server {
 	mux := http.NewServeMux()
-
 	endpoints, err := getEndpoints(echoEndpointsCustom)
 	if err != nil {
 		log.Fatalf("error getting enpoints:%+v", err)
@@ -55,10 +57,10 @@ func NewServer(addr string, tpls *templates.Templates, echoEndpointsCustom strin
 		},
 	}
 
+	s.makeMockEndpoints(endpoints)
+
 	mux.Handle(indexEndpoint, s.createHTTPHandler())
 	mux.Handle(apiEndpoint, s.createAPIHandler())
-
-	s.makeMockEndpoints(mux, endpoints)
 
 	return s
 }
@@ -97,7 +99,12 @@ func (s *server) Stop(ctx context.Context) error {
 func (s *server) createHTTPHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.RequestURI != "/" {
-			s.processEchoMock(w, r, "")
+			if mocks, ok := s.echoEndpointsMap[r.RequestURI]; ok {
+				s.createEchoHandler(mocks, w, r)
+				return
+			}
+
+			s.processEchoMock(w, r, endpoint{})
 			return
 		}
 
@@ -119,45 +126,41 @@ func (s *server) createAPIHandler() http.Handler {
 	})
 }
 
-func (s *server) makeMockEndpoints(mux *http.ServeMux, endpoints []endpoint) {
+func (s *server) makeMockEndpoints(endpoints []endpoint) {
 	endpointsMap := map[string][]endpoint{}
 	for _, e := range endpoints {
 		endpointsMap[e.Path] = append(endpointsMap[e.Path], e)
 	}
 
-	for path, mocks := range endpointsMap {
-		mux.Handle(path, s.createEchoHandler(mocks))
+	s.echoEndpointsMap = endpointsMap
+}
+
+func (s *server) createEchoHandler(mocks []endpoint, w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("error reading body:%s", err)
+		return
 	}
-}
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
-func (s *server) createEchoHandler(mocks []endpoint) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if len(mocks) == 1 || r.Body == nil {
-			s.processEchoMock(w, r, mocks[0].MockResponse)
+	for _, mock := range mocks {
+		if strings.Contains(string(reqBody), mock.MatchRequest) || mock.MatchRequest == "" {
+			s.processEchoMock(w, r, mock)
 			return
 		}
+	}
 
-		reqBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("error reading body:%s", err)
-			return
-		}
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
-
-		for _, mock := range mocks {
-			if mock.MatchRequest == string(reqBody) {
-				s.processEchoMock(w, r, mock.MockResponse)
-				return
-			}
-		}
-	})
+	fmt.Printf("\n == default enpoint ==")
+	s.processEchoMock(w, r, endpoint{})
 }
 
-func (s *server) processEchoMock(w http.ResponseWriter, r *http.Request, mockResponse string) {
+func (s *server) processEchoMock(w http.ResponseWriter, r *http.Request, mock endpoint) {
 	item := HistoryItem{
 		Request: r,
 		Date:    time.Now(),
 	}
+
+	mockResponse := mock.MockResponse
 
 	if mockResponse != "" {
 		item = HistoryItem{
