@@ -6,17 +6,21 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"moul.io/http2curl"
 )
 
 // HistoryItem holds one HTTP request data
 type HistoryItem struct {
 	*http.Request
-	Date time.Time
-	body string
+	Date         time.Time
+	bodyOriginal string
+	bodyMock     string
+	headersOrder []string
+	CurlCommand  string
 }
 
 // History holds a set of requests
@@ -25,8 +29,15 @@ type History struct {
 }
 
 // AddItem adds one item to history
-func (h *History) AddItem(item HistoryItem) {
-	h.values = append(h.values, item)
+func (h *History) AddItem(item *HistoryItem) {
+	item.headersOrder = make([]string, 0, len(item.Header))
+	for s, _ := range item.Header {
+		item.headersOrder = append(item.headersOrder, s)
+	}
+	curlCommand, _ := http2curl.GetCurlCommand(item.Request)
+	item.CurlCommand = curlCommand.String()
+
+	h.values = append(h.values, *item)
 }
 
 //GetHistory returns requests history in reverse order
@@ -47,11 +58,15 @@ func (h *History) GetHistory(reverse bool) []HistoryItem {
 func (hi *HistoryItem) PrintString() template.HTML {
 	buff := bytes.NewBuffer(nil)
 	fmt.Fprintf(buff, "<p>RequestURI: %s</p>", hi.RequestURI)
-	for s, header := range hi.Header {
-		fmt.Fprintf(buff, "<p> %s: %s</p>", s, strings.Join(header, ""))
+	for _, header := range hi.headersOrder {
+		fmt.Fprintf(buff, "<p> %s: %s</p>", header, strings.Join(hi.Header[header], ""))
 	}
 
-	fmt.Fprintf(buff, "<pre style=\"max-width:770px;\"><code class=\"language-json\">%s</code></pre>", hi.body)
+	fmt.Fprintf(buff, "<pre style=\"max-width:770px;\">reqest body:<code class=\"language-json\">%s</code></pre>", hi.bodyOriginal)
+	if hi.bodyMock != "" {
+		fmt.Fprintf(buff, "<pre style=\"max-width:770px;\">mock response:<code class=\"language-json\">%s</code></pre>", hi.bodyMock)
+
+	}
 	for s, header := range hi.Form {
 		fmt.Fprintf(buff, "<p> %s: %s<p>", s, strings.Join(header, ""))
 	}
@@ -64,37 +79,37 @@ func (hi *HistoryItem) PrintConsole(w http.ResponseWriter) {
 	fmt.Printf("\n%s", hi.Method)
 	fmt.Printf("\nRemoteAddr: %s", hi.RemoteAddr)
 	fmt.Printf("\nRequestURI: %s", hi.RequestURI)
-	printHeaders(hi.Header, w)
-	data := printBody(hi.Body, w)
-	hi.body = data
-	printHeaders((map[string][]string(hi.Form)), nil)
+	// headers
+	for _, header := range hi.headersOrder {
+		w.Header().Add(header, strings.Join(hi.Header[header], ""))
+		fmt.Printf("\n %s: %s", header, strings.Join(hi.Header[header], ""))
+	}
+	hi.printBody(w)
+	// form
+	for s, header := range hi.Form {
+		w.Header().Add(s, strings.Join(header, ""))
+		fmt.Printf("\n %s: %s", s, strings.Join(header, ""))
+	}
 	fmt.Printf("\n")
 	w.Header().Add("referrer", "http-echo-server")
 }
 
-func printBody(body io.ReadCloser, w io.Writer) string {
-	data, err := ioutil.ReadAll(body)
-	if err != nil {
-		return ""
-	}
+func (hi *HistoryItem) printBody(w io.Writer) {
 	fmt.Printf("\nBody:")
-	fmt.Printf("\n %s", data)
-	_, _ = w.Write(data)
-
-	return string(data)
-}
-
-func printHeaders(headers http.Header, w http.ResponseWriter) {
-	for s, header := range headers {
-		w.Header().Add(s, strings.Join(header, ""))
-		fmt.Printf("\n %s: %s", s, strings.Join(header, ""))
+	fmt.Printf("\n %s", hi.bodyOriginal)
+	if hi.bodyMock != "" {
+		fmt.Printf("\nMock response:")
+		fmt.Printf("\n %s", hi.bodyMock)
+		_, _ = w.Write([]byte(hi.bodyMock))
+	} else {
+		_, _ = w.Write([]byte(hi.bodyOriginal))
 	}
 }
 
 func (hi *HistoryItem) MarshalJSON() ([]byte, error) {
 	result := map[string]interface{}{
 		"Header":     hi.Header,
-		"Body":       hi.body,
+		"Body":       hi.bodyOriginal,
 		"Method":     hi.Method,
 		"URL":        hi.URL,
 		"RemoteAddr": hi.RemoteAddr,

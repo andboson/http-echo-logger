@@ -18,5 +18,9 @@ fmt:
 	go fmt ./...
 	goimports -local andboson   -w .
 
+test:
+	go test -tags="unit" -coverprofile=coverage.out -covermode=count ./...
+	go tool cover -func=coverage.out
+
 all: build
 

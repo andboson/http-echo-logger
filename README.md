@@ -9,6 +9,12 @@ A simple http echo server for logging incoming requests
 * get the history of requests via API
 * one binary file only
 
+### Last changes
+
+* added keeping header orders
+* added copy Curl request button
+* added displaying both an original request and a mock response
+
 ### Run locally
 
 ```shell
@@ -16,7 +22,7 @@ go run ./cmd/main.go
 ```
 
 * Default app port - `80`
-* Default echo endpoint - any, except `/`, `/ipa`
+* Default echo endpoint - any, except `/`(GET), `/ipa`
 * Default api endpoint - `/ipa`
 
 ### Run with docker
@@ -64,11 +70,19 @@ Body:
 }
 ```
 
+### Run in CLI
+
+```shell
+CUSTOM_ENDPOINTS='[{"path":"/q","mock":"{\"foo\":\"bar\"}"}]' go run cmd/main.go 
+```
+
 ### History
 
 You can see the history of requests in your browser http://localhost/
 
-![Screenshot from 2021-11-20 19-05-33](https://user-images.githubusercontent.com/2089327/142736723-9031ae8a-45a2-4f21-9b04-57e48955bfd4.png)
+![Screenshot from 2022-07-02 15-47-06](https://user-images.githubusercontent.com/2089327/177001390-9d1e7269-f876-446b-94d1-721208fcd8a9.png)
+
+
 
 ### API
 

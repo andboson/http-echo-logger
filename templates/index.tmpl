@@ -11,6 +11,15 @@
           href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
+    <style>
+    .curl {
+      display: none;
+    }
+    .curlCopy{
+    float:right;
+    }
+
+    </style>
 </head>
 <body>
 
@@ -35,6 +44,11 @@
             <td>{{ .Method }}</td>
             <td>{{ .RemoteAddr }}</td>
             <td>
+            <input type="text" class="curl" value="{{ .CurlCommand }}" id="curlCmd{{$i}}">
+            <button class="curlCopy" onclick="myFunction({{$i}})" title="Copy Curl command to clipboard">
+              curl
+              </button>
+
                 {{ .PrintString }}
             </td>
         </tr>
@@ -43,5 +57,18 @@
     </table>
 </div>
 
+
+<script>
+function myFunction(id) {
+  var copyText = document.getElementById("curlCmd"+id);
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+
+  var tooltip = document.getElementById("myTooltip");
+  tooltip.innerHTML = "Copied!"
+}
+
+</script>
 </body>
 </html>

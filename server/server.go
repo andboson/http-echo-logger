@@ -69,7 +69,6 @@ func getEndpoints(endpointsArray string) ([]endpoint, error) {
 	if endpointsArray == "" {
 		return nil, nil
 	}
-
 	var result []endpoint
 	return result, json.Unmarshal([]byte(endpointsArray), &result)
 }
@@ -98,7 +97,7 @@ func (s *server) Stop(ctx context.Context) error {
 
 func (s *server) createHTTPHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != "/" {
+		if r.RequestURI != "/" || r.Method == http.MethodPost {
 			if mocks, ok := s.echoEndpointsMap[r.RequestURI]; ok {
 				s.createEchoHandler(mocks, w, r)
 				return
@@ -138,7 +137,7 @@ func (s *server) makeMockEndpoints(endpoints []endpoint) {
 func (s *server) createEchoHandler(mocks []endpoint, w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("error reading body:%s", err)
+		log.Printf("error reading bodyOriginal:%s", err)
 		return
 	}
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
@@ -155,6 +154,10 @@ func (s *server) createEchoHandler(mocks []endpoint, w http.ResponseWriter, r *h
 }
 
 func (s *server) processEchoMock(w http.ResponseWriter, r *http.Request, mock endpoint) {
+	if r.RequestURI == "/favicon.ico" {
+		return
+	}
+
 	item := HistoryItem{
 		Request: r,
 		Date:    time.Now(),
@@ -165,13 +168,11 @@ func (s *server) processEchoMock(w http.ResponseWriter, r *http.Request, mock en
 	if mockResponse != "" {
 		item = HistoryItem{
 			Request: &http.Request{
-				Header:        r.Header,
-				Body:          ioutil.NopCloser(bytes.NewBufferString(mockResponse)),
-				ContentLength: int64(len(mockResponse)),
-				Method:        r.Method,
-				URL:           r.URL,
-				RemoteAddr:    r.RemoteAddr,
-				RequestURI:    r.RequestURI,
+				Header:     r.Header,
+				Method:     r.Method,
+				URL:        r.URL,
+				RemoteAddr: r.RemoteAddr,
+				RequestURI: r.RequestURI,
 			},
 			Date: time.Now(),
 		}
@@ -179,7 +180,13 @@ func (s *server) processEchoMock(w http.ResponseWriter, r *http.Request, mock en
 		item.Header.Set("Content-Type", "application/json")
 	}
 
+	data, _ := ioutil.ReadAll(r.Body)
+	item.bodyOriginal = string(data)
+	item.bodyMock = mock.MockResponse
+	item.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+
+	s.history.AddItem(&item)
 	item.PrintConsole(w)
-	s.history.AddItem(item)
+
 	w.Header().Add("referrer", "http-echo-server")
 }
