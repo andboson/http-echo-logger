@@ -72,7 +72,7 @@ func checkResponseEqual(r *http.Response, sample string) bool {
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatalf("error reading body:%+v", err)
+		log.Fatalf("error reading bodyOriginal:%+v", err)
 	}
 
 	return string(b) == sample
