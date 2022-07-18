@@ -11,7 +11,7 @@ A simple http echo server for logging incoming requests
 
 ### Last changes
 
-* added keeping header orders
+* added keeping headers order
 * added copy Curl request button
 * added displaying both an original request and a mock response
 
