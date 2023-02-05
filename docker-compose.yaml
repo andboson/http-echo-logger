@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   request-logger:
-    image: andboson/http-cli-echo-logger
+    build: .
     ports:
       - "8081:80"
     environment:
