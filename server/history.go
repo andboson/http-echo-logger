@@ -102,6 +102,7 @@ func (hi *HistoryItem) printBody(w io.Writer) {
 		fmt.Printf("\n %s", hi.bodyMock)
 		_, _ = w.Write([]byte(hi.bodyMock))
 	} else {
+		fmt.Printf("\nResponse is the same")
 		_, _ = w.Write([]byte(hi.bodyOriginal))
 	}
 }
