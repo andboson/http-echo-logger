@@ -1,3 +1,6 @@
+## ⚠️ archived, check out [https://github.com/andboson/mock-server](https://github.com/andboson/mock-server)
+
+
 # http-cli-echo-logger
 
 A simple http echo server for logging incoming requests
