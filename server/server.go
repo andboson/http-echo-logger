@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -17,7 +17,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//Server holds a HTTP server methods
+// Server holds a HTTP server methods
 type Server interface {
 	Start() error
 	Stop(ctx context.Context) error
@@ -135,12 +135,12 @@ func (s *server) makeMockEndpoints(endpoints []endpoint) {
 }
 
 func (s *server) createEchoHandler(mocks []endpoint, w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error reading bodyOriginal:%s", err)
 		return
 	}
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+	r.Body = io.NopCloser(bytes.NewBuffer(reqBody))
 
 	for _, mock := range mocks {
 		if strings.Contains(string(reqBody), mock.MatchRequest) || mock.MatchRequest == "" {
@@ -180,10 +180,10 @@ func (s *server) processEchoMock(w http.ResponseWriter, r *http.Request, mock en
 		item.Header.Set("Content-Type", "application/json")
 	}
 
-	data, _ := ioutil.ReadAll(r.Body)
+	data, _ := io.ReadAll(r.Body)
 	item.bodyOriginal = string(data)
 	item.bodyMock = mock.MockResponse
-	item.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+	item.Body = io.NopCloser(bytes.NewBuffer(data))
 
 	s.history.AddItem(&item)
 	item.PrintConsole(w)

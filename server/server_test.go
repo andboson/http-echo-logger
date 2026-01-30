@@ -3,7 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"testing"
@@ -70,7 +70,7 @@ func checkResponseEqual(r *http.Response, sample string) bool {
 		return false
 	}
 
-	b, err := ioutil.ReadAll(r.Body)
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatalf("error reading bodyOriginal:%+v", err)
 	}
